@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriGuard - Planes Nutricionales para Personal Policial</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">NG</div>
+                    <div class="logo-text">
+                        <h1>NutriGuard</h1>
+                        <p>Planes nutricionales para personal policial</p>
+                    </div>
+                </div>
+                <div class="user-actions">
+                    <!-- Sin login/registro -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-links">
+                    <a href="#" class="active" data-section="home">Inicio</a>
+                    <a href="#" data-section="plans">Planes</a>
+                    <a href="#" data-section="recipes">Recetas</a>
+                    <a href="#" data-section="calculator">Calculadora</a>
+                    <a href="#" data-section="my-plans">Mis Planes</a>
+                </div>
+                <div class="nav-search">
+                    <input type="text" id="global-search" placeholder="Buscar comidas, planes...">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Sección Home (Dashboard) -->
+        <section id="home-section" class="section active">
+            <div class="dashboard">
+                <div class="main-content">
+                    <h2 class="section-title">Recomendaciones para tu Turno</h2>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label for="shift-select">Turno</label>
+                            <select id="shift-select">
+                                <option value="morning">Mañana (06:00 - 14:00)</option>
+                                <option value="afternoon">Tarde (14:00 - 22:00)</option>
+                                <option value="night">Noche (22:00 - 06:00)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="calories-filter">Calorías máx. por comida</label>
+                            <input type="number" id="calories-filter" placeholder="Ej: 600">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="search">Buscar</label>
+                            <input type="text" id="search" placeholder="Ej: pollo, ensalada...">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-primary" id="apply-filters">Aplicar Filtros</button>
+                        </div>
+                    </div>
+                    
+                    <div class="meals-grid" id="meals-container">
+                        <!-- Las comidas se cargarán aquí dinámicamente -->
+                    </div>
+                    
+                    <div class="weekly-planner">
+                        <div class="planner-header">
+                            <h2 class="section-title">Planificador Semanal</h2>
+                            <div class="week-navigation">
+                                <button class="btn btn-outline btn-small" id="prev-week">Semana Anterior</button>
+                                <span id="current-week">Semana Actual</span>
+                                <button class="btn btn-outline btn-small" id="next-week">Semana Siguiente</button>
+                            </div>
+                        </div>
+                        
+                        <div class="week-days" id="week-days-container">
+                            <!-- Los días se cargarán aquí dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Consejos Rápidos</h3>
+                        </div>
+                        <div class="quick-tips">
+                            <ul>
+                                <li>Hidrátate regularmente durante tu turno</li>
+                                <li>Prioriza proteínas magras y carbohidratos complejos</li>
+                                <li>Incluye snacks saludables para mantener energía</li>
+                                <li>Evita comidas pesadas antes de dormir</li>
+                                <li>Planifica tus comidas con anticipación</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="hydration-reminder">
+                        <div class="hydration-header">
+                            <div class="hydration-icon">💧</div>
+                            <h3>Recordatorio de Hidratación</h3>
+                        </div>
+                        <p>Es importante mantenerse hidratado durante tu turno. Intenta beber al menos 2 litros de agua.</p>
+                        <button class="btn btn-primary btn-small" id="hydration-btn">Registrar consumo</button>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Planes Recomendados</h3>
+                        </div>
+                        <div class="saved-plans" id="saved-plans-list">
+                            <p>Explora nuestros planes nutricionales especializados.</p>
+                            <button class="btn btn-outline btn-small" id="explore-plans">Ver todos los planes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Planes Nutricionales -->
+        <section id="plans-section" class="section">
+            <h2 class="section-title">Planes Nutricionales</h2>
+            <div class="plans-container" id="plans-container">
+                <!-- Los planes se cargarán aquí dinámicamente -->
+            </div>
+        </section>
+
+        <!-- Sección Recetas -->
+        <section id="recipes-section" class="section">
+            <h2 class="section-title">Recetas y Preparaciones</h2>
+            <div class="recipes-container">
+                <div class="card">
+                    <h3>Recetas por Categoría</h3>
+                    <p>Esta sección estará disponible próximamente con recetas detalladas paso a paso.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Calculadora -->
+        <section id="calculator-section" class="section">
+            <h2 class="section-title">Calculadora Nutricional</h2>
+            <div class="calculator-container">
+                <div class="card">
+                    <h3>Calculadora de Macronutrientes</h3>
+                    <div class="calculator-form">
+                        <div class="form-group">
+                            <label for="weight">Peso (kg)</label>
+                            <input type="number" id="weight" placeholder="Ej: 75">
+                        </div>
+                        <div class="form-group">
+                            <label for="height">Altura (cm)</label>
+                            <input type="number" id="height" placeholder="Ej: 175">
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Edad</label>
+                            <input type="number" id="age" placeholder="Ej: 30">
+                        </div>
+                        <div class="form-group">
+                            <label for="activity">Nivel de Actividad</label>
+                            <select id="activity">
+                                <option value="1.2">Sedentario (oficina)</option>
+                                <option value="1.375">Ligera (1-3 días/semana)</option>
+                                <option value="1.55" selected>Moderada (3-5 días/semana)</option>
+                                <option value="1.725">Activa (6-7 días/semana)</option>
+                                <option value="1.9">Muy activa (entrenamiento diario intenso)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="goal">Objetivo</label>
+                            <select id="goal">
+                                <option value="loss">Pérdida de peso</option>
+                                <option value="maintain" selected>Mantenimiento</option>
+                                <option value="gain">Aumento de masa muscular</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="calculate-btn">Calcular</button>
+                    </div>
+                    <div id="calculator-results" class="calculator-results" style="display: none;">
+                        <h4>Resultados:</h4>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-value" id="calories-result">0</div>
+                                <div class="result-label">Calorías/día</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value" id="protein-result">0g</div>
+                                <div class="result-label">Proteína</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value" id="carbs-result">0g</div>
+                                <div class="result-label">Carbohidratos</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-value" id="fat-result">0g</div>
+                                <div class="result-label">Grasas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Mis Planes -->
+        <section id="my-plans-section" class="section">
+            <div class="my-plans-header">
+                <h2 class="section-title">Mis Planes Guardados</h2>
+                <button class="btn btn-primary" id="create-new-plan">Crear Nuevo Plan</button>
+            </div>
+            
+            <div class="plans-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="daily-plans">Planes Diarios</button>
+                    <button class="tab-btn" data-tab="weekly-plans">Planes Semanales</button>
+                    <button class="tab-btn" data-tab="favorites">Favoritos</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div id="daily-plans" class="tab-pane active">
+                        <div class="my-plans-grid" id="daily-plans-container">
+                            <!-- Planes diarios se cargarán aquí -->
+                        </div>
+                    </div>
+                    
+                    <div id="weekly-plans" class="tab-pane">
+                        <div class="my-plans-grid" id="weekly-plans-container">
+                            <!-- Planes semanales se cargarán aquí -->
+                        </div>
+                    </div>
+                    
+                    <div id="favorites" class="tab-pane">
+                        <div class="my-plans-grid" id="favorites-container">
+                            <!-- Comidas favoritas se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="empty-state" id="empty-plans-state" style="display: none;">
+                <div class="empty-icon">📋</div>
+                <h3>No tienes planes guardados</h3>
+                <p>Comienza agregando comidas a tu plan desde la sección de recomendaciones.</p>
+                <button class="btn btn-primary" onclick="switchSection('home')">Explorar Recomendaciones</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-copyright">
+                    <p>&copy; 2023 NutriGuard. Todos los derechos reservados.</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Términos de uso</a>
+                    <a href="#">Política de privacidad</a>
+                    <a href="#">Contacto</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal para detalles de comida -->
+    <div class="modal" id="meal-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalles de la Comida</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="meal-modal-body">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalles de plan -->
+    <div class="modal" id="plan-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalles del Plan</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="plan-modal-body">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear plan -->
+    <div class="modal" id="create-plan-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Crear Nuevo Plan</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-plan-form">
+                    <div class="form-group">
+                        <label for="plan-name">Nombre del Plan</label>
+                        <input type="text" id="plan-name" required placeholder="Ej: Plan Semanal Turno Mañana">
+                    </div>
+                    <div class="form-group">
+                        <label for="plan-description">Descripción</label>
+                        <textarea id="plan-description" placeholder="Describe tu plan..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="plan-type">Tipo de Plan</label>
+                        <select id="plan-type">
+                            <option value="daily">Plan Diario</option>
+                            <option value="weekly">Plan Semanal</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('create-plan-modal')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Crear Plan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

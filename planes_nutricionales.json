@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "nombre": "Plan Básico Policial",
+    "descripcion": "Plan diseñado para uniformados en patrulla, enfocado en energía y recuperación.",
+    "detalles": {
+      "desayuno": "Avena con leche descremada, fruta fresca, café sin azúcar.",
+      "almuerzo": "Pechuga de pollo a la plancha, arroz integral, ensalada de vegetales, agua.",
+      "cena": "Tortilla de claras, pan integral, jugo natural sin azúcar.",
+      "snacks": "Yogur bajo en grasa, frutos secos."
+    },
+    "kalorias": 2200,
+    "preferencias": ["Sin azúcar", "Bajo en grasa"]
+  },
+  {
+    "id": 2,
+    "nombre": "Plan Alto Rendimiento",
+    "descripcion": "Para uniformados en entrenamiento físico intenso.",
+    "detalles": {
+      "desayuno": "Huevos revueltos, pan integral, batido de frutas.",
+      "almuerzo": "Carne magra, pasta integral, ensalada de espinaca, agua.",
+      "cena": "Pescado al vapor, puré de papa, vegetales cocidos.",
+      "snacks": "Barra de proteína, fruta fresca."
+    },
+    "kalorias": 2800,
+    "preferencias": ["Alto en proteína", "Sin fritos"]
+  }
+]

@@ -27,6 +27,8 @@ const emptyPlansState = document.getElementById('empty-plans-state');
 const dailyPlansContainer = document.getElementById('daily-plans-container');
 const weeklyPlansContainer = document.getElementById('weekly-plans-container');
 const favoritesContainer = document.getElementById('favorites-container');
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = document.querySelector('.theme-icon');
 
 // Estado de la aplicación
 let currentWeek = 0; // 0 = semana actual
@@ -35,6 +37,35 @@ let userPlans = {
     weekly: [],
     favorites: []
 };
+
+// Sistema de modo oscuro
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('nutriguard_theme') || 'light';
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Si no hay tema guardado, usar la preferencia del sistema
+    if (!localStorage.getItem('nutriguard_theme') && prefersDark) {
+        setTheme('dark');
+    } else {
+        setTheme(savedTheme);
+    }
+}
+
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('nutriguard_theme', theme);
+    
+    // Actualizar icono
+    if (themeIcon) {
+        themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+}
 
 // Inicializar desde localStorage
 function initializeUserData() {
@@ -109,7 +140,7 @@ function renderMeals(shift) {
                     <span>•</span>
                     <span>${meal.difficulty}</span>
                 </div>
-                <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem;">${meal.description}</p>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">${meal.description}</p>
                 <div class="meal-macros">
                     <div class="macro">
                         <span class="macro-value">${meal.protein}g</span>
@@ -214,13 +245,13 @@ function showMealDetails(mealId) {
     mealModalBody.innerHTML = `
         <h3>${meal.name}</h3>
         <div style="display: flex; gap: 1rem; margin: 1rem 0;">
-            <div style="background-color: #e2e8f0; padding: 0.5rem 1rem; border-radius: 4px;">
+            <div style="background-color: var(--bg-primary); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
                 <strong>${meal.calories}</strong> kcal
             </div>
-            <div style="background-color: #e2e8f0; padding: 0.5rem 1rem; border-radius: 4px;">
+            <div style="background-color: var(--bg-primary); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
                 <strong>${meal.prepTime}</strong> preparación
             </div>
-            <div style="background-color: #e2e8f0; padding: 0.5rem 1rem; border-radius: 4px;">
+            <div style="background-color: var(--bg-primary); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
                 <strong>${meal.difficulty}</strong>
             </div>
         </div>
@@ -228,15 +259,15 @@ function showMealDetails(mealId) {
         
         <h4 style="margin-top: 1.5rem;">Información Nutricional</h4>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0;">
-            <div style="text-align: center; padding: 1rem; background-color: #f8fafc; border-radius: 4px;">
+            <div style="text-align: center; padding: 1rem; background-color: var(--bg-primary); border-radius: 4px; border: 1px solid var(--border-color);">
                 <div style="font-size: 1.2rem; font-weight: bold; color: var(--accent);">${meal.protein}g</div>
                 <div>Proteína</div>
             </div>
-            <div style="text-align: center; padding: 1rem; background-color: #f8fafc; border-radius: 4px;">
+            <div style="text-align: center; padding: 1rem; background-color: var(--bg-primary); border-radius: 4px; border: 1px solid var(--border-color);">
                 <div style="font-size: 1.2rem; font-weight: bold; color: var(--accent);">${meal.carbs}g</div>
                 <div>Carbohidratos</div>
             </div>
-            <div style="text-align: center; padding: 1rem; background-color: #f8fafc; border-radius: 4px;">
+            <div style="text-align: center; padding: 1rem; background-color: var(--bg-primary); border-radius: 4px; border: 1px solid var(--border-color);">
                 <div style="font-size: 1.2rem; font-weight: bold; color: var(--accent);">${meal.fat}g</div>
                 <div>Grasas</div>
             </div>
@@ -313,7 +344,7 @@ function showPlanDetails(planId) {
     planModalBody.innerHTML = `
         <h3>${plan.name}</h3>
         <div style="display: flex; gap: 1rem; margin: 1rem 0;">
-            <div style="background-color: #e2e8f0; padding: 0.5rem 1rem; border-radius: 4px;">
+            <div style="background-color: var(--bg-primary); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
                 <strong>${plan.calories}</strong> kcal/día
             </div>
         </div>
@@ -587,12 +618,20 @@ function closeModal(modalId) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar tema
+    initializeTheme();
+    
     // Inicializar datos del usuario
     initializeUserData();
     
     // Inicializar vistas
     renderMeals(shiftSelect.value);
     renderWeeklyPlanner();
+    
+    // Toggle de tema
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
     
     // Navegación entre secciones
     navLinks.forEach(link => {

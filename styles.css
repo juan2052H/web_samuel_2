@@ -1366,27 +1366,97 @@ footer {
     flex-wrap: wrap;
 }
 
-/* Responsive para recetas */
+/* [AGREGAR EN styles.css] */
+
+/* Botón de peligro */
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+    border: 1px solid var(--danger);
+}
+
+.btn-danger:hover {
+    background-color: #c53030;
+    border-color: #c53030;
+}
+
+/* Grid de preferencias */
+.preferences-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.preference-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.preference-option:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent);
+}
+
+.preference-option input[type="checkbox"] {
+    margin: 0;
+}
+
+.preference-option span {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .recipes-grid {
+    .preferences-grid {
         grid-template-columns: 1fr;
     }
-    
-    .recipe-header {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .recipe-title {
-        margin-right: 0;
-    }
-    
-    .recipe-actions {
-        flex-direction: column;
-    }
-    
-    .recipe-actions .btn {
-        width: 100%;
-        justify-content: center;
-    }
+}
+/* [AGREGAR EN styles.css] */
+
+/* Mejoras para la sección de planes personalizados */
+.plans-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* Contadores en pestañas */
+.tab-btn[data-tab] {
+    position: relative;
+}
+
+.tab-btn[data-tab]::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tab-btn[data-count]:not([data-count="0"])::after {
+    opacity: 1;
 }

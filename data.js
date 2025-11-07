@@ -257,3 +257,12 @@ const nutritionPlans = [
         preferences: ["Bajo en calorías", "Balanceado", "Fácil preparación"]
     }
 ];
+
+
+// Array para almacenar planes personalizados
+let customPlans = JSON.parse(localStorage.getItem('nutriguard_custom_plans')) || [];
+
+// Función para guardar planes personalizados
+function saveCustomPlans() {
+    localStorage.setItem('nutriguard_custom_plans', JSON.stringify(customPlans));
+}

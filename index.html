@@ -26,15 +26,7 @@
         </div>
     </header>
 
-    <!-- En la sección de planes, agrega este botón -->
-    <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
-        <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('predefined')">
-            📥 Descargar Múltiples
-        </button>
-        <span style="font-size: 0.9rem; color: var(--text-secondary);">
-            ${nutritionPlans.length} planes disponibles
-        </span>
-    </div>
+  
 
     <nav>
         <div class="container">
@@ -42,7 +34,6 @@
                 <div class="nav-links">
                     <a href="#" class="active" data-section="home">Inicio</a>
                     <a href="#" data-section="plans">Planes</a>
-                    <a href="#" data-section="recipes">Recetas</a>
                     <a href="#" data-section="calculator">Calculadora</a>
                     <a href="#" data-section="my-plans">Mis Planes</a>
                 </div>
@@ -151,7 +142,19 @@
                 <!-- Los planes se cargarán aquí dinámicamente -->
             </div>
         </section>
-        
+         <div id="predefined-plans" class="tab-pane active">
+            <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('predefined')">
+                    📥 Descargar Múltiples
+                </button>
+                <span style="font-size: 0.9rem; color: var(--text-secondary);" id="predefined-plans-tab-count">
+                    <!-- El contador se cargará dinámicamente -->
+                </span>
+            </div>
+            <div class="plans-container" id="plans-container">
+                <!-- Los planes predefinidos se cargarán aquí dinámicamente -->
+            </div>
+        </div>
 
           <!-- Sección Planes Nutricionales -->
         <section id="plans-section" class="section">
@@ -164,6 +167,15 @@
                     <button class="btn btn-primary" id="create-custom-plan">Crear Plan Personalizado</button>
                 </div>
             </div>
+            <!-- En la sección de planes, agrega este botón -->
+            <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('predefined')">
+                    📥 Descargar Múltiples
+                </button>
+                <span style="font-size: 0.9rem; color: var(--text-secondary);" id="predefined-plans-count">
+                    <!-- El contador se cargará dinámicamente -->
+                </span>
+            </div>
             
             <div class="plans-tabs">
                 <div class="tab-buttons">
@@ -171,29 +183,15 @@
                     <button class="tab-btn" data-tab="my-custom-plans">Mis Planes Personalizados</button>
                 </div>
                 
-                <div class="tab-content">
-                    <div id="predefined-plans" class="tab-pane active">
-                        <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
-                            <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('predefined')">
-                                📥 Descargar Múltiples
-                            </button>
-                            <span style="font-size: 0.9rem; color: var(--text-secondary);">
-                                ${nutritionPlans.length} planes disponibles
-                            </span>
-                        </div>
-                        <div class="plans-container" id="plans-container">
-                            <!-- Los planes predefinidos se cargarán aquí dinámicamente -->
-                        </div>
-                    </div>
+               
                     
                     <div id="my-custom-plans" class="tab-pane">
                         <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
-                            <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('custom')" 
-                                    ${customPlans.length === 0 ? 'disabled' : ''}>
+                            <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('custom')" id="download-custom-plans-btn">
                                 📥 Descargar Múltiples
                             </button>
-                            <span style="font-size: 0.9rem; color: var(--text-secondary);">
-                                ${customPlans.length} planes personalizados
+                            <span style="font-size: 0.9rem; color: var(--text-secondary);" id="custom-plans-count">
+                                <!-- El contador se cargará dinámicamente -->
                             </span>
                         </div>
                         <div class="plans-container" id="custom-plans-container">
@@ -206,7 +204,7 @@
                             <button class="btn btn-primary" id="create-first-plan">Crear Mi Primer Plan</button>
                         </div>
                     </div>
-                </div>
+                                    </div>
             </div>
         </section>
 
@@ -279,49 +277,77 @@
             </div>
         </section>
 
-        <!-- Sección Mis Planes -->
-        <section id="my-plans-section" class="section">
-            <div class="my-plans-header">
-                <h2 class="section-title">Mis Planes Guardados</h2>
-                <button class="btn btn-primary" id="create-new-plan">Crear Nuevo Plan</button>
+        <!-- [REEMPLAZAR LA SECCIÓN COMPLETA DE "Mis Planes" EN index.html] -->
+
+    <!-- Sección Mis Planes -->
+    <section id="my-plans-section" class="section">
+        <div class="my-plans-header">
+            <h2 class="section-title">Mis Planes Guardados</h2>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-outline" id="download-my-plans">
+                    📥 Descargar Planes
+                </button>
+                <button class="btn btn-primary" id="create-custom-plan-from-my-plans">Crear Plan Personalizado</button>
+            </div>
+        </div>
+        
+        <div class="plans-tabs">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="daily-plans">Planes Diarios</button>
+                <button class="tab-btn" data-tab="weekly-plans">Planes Semanales</button>
+                <button class="tab-btn" data-tab="custom-plans">Mis Planes Personalizados</button>
+                <button class="tab-btn" data-tab="favorites">Favoritos</button>
             </div>
             
-            <div class="plans-tabs">
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="daily-plans">Planes Diarios</button>
-                    <button class="tab-btn" data-tab="weekly-plans">Planes Semanales</button>
-                    <button class="tab-btn" data-tab="favorites">Favoritos</button>
+            <div class="tab-content">
+                <div id="daily-plans" class="tab-pane active">
+                    <div class="my-plans-grid" id="daily-plans-container">
+                        <!-- Planes diarios se cargarán aquí -->
+                    </div>
                 </div>
                 
-                <div class="tab-content">
-                    <div id="daily-plans" class="tab-pane active">
-                        <div class="my-plans-grid" id="daily-plans-container">
-                            <!-- Planes diarios se cargarán aquí -->
-                        </div>
+                <div id="weekly-plans" class="tab-pane">
+                    <div class="my-plans-grid" id="weekly-plans-container">
+                        <!-- Planes semanales se cargarán aquí -->
                     </div>
-                    
-                    <div id="weekly-plans" class="tab-pane">
-                        <div class="my-plans-grid" id="weekly-plans-container">
-                            <!-- Planes semanales se cargarán aquí -->
-                        </div>
+                </div>
+                
+                <div id="custom-plans" class="tab-pane">
+                    <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                        <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('custom')" 
+                                ${customPlans.length === 0 ? 'disabled' : ''}>
+                            📥 Descargar Múltiples
+                        </button>
+                        <span style="font-size: 0.9rem; color: var(--text-secondary);">
+                            ${customPlans.length} planes personalizados
+                        </span>
                     </div>
-                    
-                    <div id="favorites" class="tab-pane">
-                        <div class="my-plans-grid" id="favorites-container">
-                            <!-- Comidas favoritas se cargarán aquí -->
-                        </div>
+                    <div class="plans-container" id="my-custom-plans-container">
+                        <!-- Planes personalizados se cargarán aquí -->
+                    </div>
+                    <div class="empty-state" id="empty-my-custom-plans-state" style="display: none;">
+                        <div class="empty-icon">📋</div>
+                        <h3>No tienes planes personalizados</h3>
+                        <p>Crea tu primer plan personalizado para adaptarlo a tus necesidades específicas.</p>
+                        <button class="btn btn-primary" id="create-first-plan-from-my-plans">Crear Mi Primer Plan</button>
+                    </div>
+                </div>
+                
+                <div id="favorites" class="tab-pane">
+                    <div class="my-plans-grid" id="favorites-container">
+                        <!-- Comidas favoritas se cargarán aquí -->
                     </div>
                 </div>
             </div>
-            
-            <div class="empty-state" id="empty-plans-state" style="display: none;">
-                <div class="empty-icon">📋</div>
-                <h3>No tienes planes guardados</h3>
-                <p>Comienza agregando comidas a tu plan desde la sección de recomendaciones.</p>
-                <button class="btn btn-primary" onclick="switchSection('home')">Explorar Recomendaciones</button>
-            </div>
-        </section>
-    </main>
+    </div>
+    
+    <div class="empty-state" id="empty-plans-state" style="display: none;">
+        <div class="empty-icon">📋</div>
+        <h3>No tienes planes guardados</h3>
+        <p>Comienza agregando comidas a tu plan desde la sección de recomendaciones.</p>
+        <button class="btn btn-primary" onclick="switchSection('home')">Explorar Recomendaciones</button>
+    </div>
+</section>
 
     <footer>
         <div class="container">

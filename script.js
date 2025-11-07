@@ -77,6 +77,10 @@ function initializeUserData() {
     if (savedPlans) {
         userPlans = JSON.parse(savedPlans);
     }
+    
+    // Inicializar planes personalizados
+    initializeCustomPlans();
+    
     renderMyPlans();
 }
 
@@ -1346,4 +1350,553 @@ function processMultiDownload(planType) {
     
     downloadMultiplePlans(selectedPlanIds, planType);
     closeModal('multi-download-modal');
+}
+// [AGREGAR DESPUÉS DE initializeUserData()]
+
+// Inicializar planes personalizados
+function initializeCustomPlans() {
+    const savedCustomPlans = localStorage.getItem('nutriguard_custom_plans');
+    if (savedCustomPlans) {
+        customPlans = JSON.parse(savedCustomPlans);
+    }
+    renderCustomPlans();
+}
+
+// Renderizar planes personalizados
+function renderCustomPlans() {
+    const container = document.getElementById('custom-plans-container');
+    const emptyState = document.getElementById('empty-custom-plans-state');
+    
+    if (!container) return;
+    
+    // Mostrar/ocultar estado vacío
+    if (customPlans.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    
+    if (emptyState) emptyState.style.display = 'none';
+    
+    container.innerHTML = customPlans.map(plan => `
+        <div class="plan-card" data-plan-id="${plan.id}">
+            <div class="plan-header">
+                <h3 class="plan-title">${plan.name}</h3>
+                <div class="plan-calories">${plan.calories} kcal/día</div>
+            </div>
+            <div class="plan-content">
+                <p class="plan-description">${plan.description || 'Plan personalizado'}</p>
+                
+                <div class="plan-preferences">
+                    ${plan.preferences && plan.preferences.length > 0 ? 
+                      plan.preferences.map(pref => `<span class="preference-tag">${pref}</span>`).join('') : 
+                      '<span class="preference-tag">Personalizado</span>'}
+                </div>
+                
+                <div class="plan-details">
+                    <h4>Desayuno</h4>
+                    <p>${plan.meals.breakfast}</p>
+                    
+                    <h4>Almuerzo</h4>
+                    <p>${plan.meals.lunch}</p>
+                    
+                    <h4>Cena</h4>
+                    <p>${plan.meals.dinner}</p>
+                    
+                    ${plan.meals.snacks ? `
+                    <h4>Snacks</h4>
+                    <p>${plan.meals.snacks}</p>
+                    ` : ''}
+                </div>
+                
+                <div class="plan-actions">
+                    <button class="btn btn-primary" onclick="showCustomPlanDetails(${plan.id})">Ver Detalles</button>
+                    <button class="btn btn-outline" onclick="downloadPlan(${plan.id}, 'custom')">Descargar</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteCustomPlan(${plan.id})">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Mostrar detalles de plan personalizado
+function showCustomPlanDetails(planId) {
+    const plan = customPlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    planModalBody.innerHTML = `
+        <h3>${plan.name}</h3>
+        <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+            <div style="background-color: var(--bg-primary); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
+                <strong>${plan.calories}</strong> kcal/día
+            </div>
+            <div style="background-color: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 4px;">
+                <strong>Personalizado</strong>
+            </div>
+        </div>
+        <p>${plan.description || 'Plan nutricional personalizado.'}</p>
+        
+        ${plan.preferences && plan.preferences.length > 0 ? `
+        <div style="margin-top: 1.5rem;">
+            <h4>Preferencias</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 1.5rem;">
+                ${plan.preferences.map(pref => `<span class="preference-tag">${pref}</span>`).join('')}
+            </div>
+        </div>
+        ` : ''}
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div>
+                <h4>Desayuno</h4>
+                <p>${plan.meals.breakfast}</p>
+                
+                <h4 style="margin-top: 1rem;">Almuerzo</h4>
+                <p>${plan.meals.lunch}</p>
+            </div>
+            <div>
+                <h4>Cena</h4>
+                <p>${plan.meals.dinner}</p>
+                
+                ${plan.meals.snacks ? `
+                <h4 style="margin-top: 1rem;">Snacks</h4>
+                <p>${plan.meals.snacks}</p>
+                ` : ''}
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+            <button class="btn btn-primary" onclick="downloadPlan(${plan.id}, 'custom')">Descargar Plan</button>
+            <button class="btn btn-outline" onclick="applyCustomPlan(${plan.id})">Aplicar este Plan</button>
+            <button class="btn btn-danger" onclick="deleteCustomPlan(${plan.id}); closeModal('plan-modal')">Eliminar Plan</button>
+        </div>
+    `;
+    
+    planModal.style.display = 'flex';
+}
+
+// Eliminar plan personalizado
+function deleteCustomPlan(planId) {
+    if (confirm('¿Estás seguro de que quieres eliminar este plan personalizado?')) {
+        customPlans = customPlans.filter(plan => plan.id !== planId);
+        saveCustomPlans();
+        renderCustomPlans();
+        
+        // Si estamos en la sección de planes, actualizar
+        if (document.getElementById('plans-section').classList.contains('active')) {
+            renderCustomPlans();
+        }
+    }
+}
+
+// Aplicar plan personalizado
+function applyCustomPlan(planId) {
+    const plan = customPlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    // Aquí puedes implementar la lógica para aplicar el plan
+    alert(`Plan "${plan.name}" aplicado. Esta funcionalidad puede expandirse para integrar el plan con el planificador semanal.`);
+}
+
+// Crear nuevo plan personalizado
+function createCustomPlan(planData) {
+    const newPlan = {
+        id: Date.now(),
+        name: planData.name,
+        description: planData.description,
+        calories: parseInt(planData.calories),
+        preferences: planData.preferences || [],
+        meals: {
+            breakfast: planData.breakfast,
+            lunch: planData.lunch,
+            dinner: planData.dinner,
+            snacks: planData.snacks || ''
+        },
+        createdAt: new Date().toISOString()
+    };
+    
+    customPlans.push(newPlan);
+    saveCustomPlans();
+    renderCustomPlans();
+    
+    return newPlan;
+}
+
+// [AGREGAR EN EL EVENT LISTENER DEL DOMCONTENTLOADED]
+document.addEventListener('DOMContentLoaded', () => {
+    // ... código existente ...
+    
+    // Inicializar planes personalizados
+    initializeCustomPlans();
+    
+    // Botón para crear plan personalizado
+    document.getElementById('create-custom-plan')?.addEventListener('click', () => {
+        document.getElementById('create-custom-plan-modal').style.display = 'flex';
+    });
+    
+    // Botón para crear primer plan
+    document.getElementById('create-first-plan')?.addEventListener('click', () => {
+        document.getElementById('create-custom-plan-modal').style.display = 'flex';
+    });
+    
+    // Formulario de plan personalizado
+    document.getElementById('custom-plan-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const preferences = Array.from(document.querySelectorAll('.preference-checkbox:checked'))
+            .map(checkbox => checkbox.value);
+        
+        const planData = {
+            name: formData.get('plan-name'),
+            description: formData.get('plan-description'),
+            calories: formData.get('plan-calories'),
+            preferences: preferences,
+            breakfast: formData.get('plan-breakfast'),
+            lunch: formData.get('plan-lunch'),
+            dinner: formData.get('plan-dinner'),
+            snacks: formData.get('plan-snacks')
+        };
+        
+        // Validaciones básicas
+        if (!planData.name || !planData.calories || !planData.breakfast || !planData.lunch || !planData.dinner) {
+            alert('Por favor, completa todos los campos obligatorios (*)');
+            return;
+        }
+        
+        createCustomPlan(planData);
+        closeModal('create-custom-plan-modal');
+        e.target.reset();
+        
+        // Cambiar a la pestaña de planes personalizados si estamos en planes
+        if (document.getElementById('plans-section').classList.contains('active')) {
+            document.querySelector('[data-tab="my-custom-plans"]').click();
+        }
+    });
+});
+// [AGREGAR ESTAS NUEVAS FUNCIONES EN script.js]
+
+// Renderizar planes personalizados en "Mis Planes"
+function renderMyCustomPlans() {
+    const container = document.getElementById('my-custom-plans-container');
+    const emptyState = document.getElementById('empty-my-custom-plans-state');
+    
+    if (!container) return;
+    
+    // Mostrar/ocultar estado vacío
+    if (customPlans.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+    }
+    
+    if (emptyState) emptyState.style.display = 'none';
+    
+    container.innerHTML = customPlans.map(plan => `
+        <div class="plan-card" data-plan-id="${plan.id}">
+            <div class="plan-header">
+                <h3 class="plan-title">${plan.name}</h3>
+                <div class="plan-calories">${plan.calories} kcal/día</div>
+            </div>
+            <div class="plan-content">
+                <p class="plan-description">${plan.description || 'Plan personalizado creado por ti'}</p>
+                
+                <div class="plan-preferences">
+                    ${plan.preferences && plan.preferences.length > 0 ? 
+                      plan.preferences.map(pref => `<span class="preference-tag">${pref}</span>`).join('') : 
+                      '<span class="preference-tag">Personalizado</span>'}
+                </div>
+                
+                <div class="plan-details">
+                    <h4>Desayuno</h4>
+                    <p>${plan.meals.breakfast}</p>
+                    
+                    <h4>Almuerzo</h4>
+                    <p>${plan.meals.lunch}</p>
+                    
+                    <h4>Cena</h4>
+                    <p>${plan.meals.dinner}</p>
+                    
+                    ${plan.meals.snacks ? `
+                    <h4>Snacks</h4>
+                    <p>${plan.meals.snacks}</p>
+                    ` : ''}
+                </div>
+                
+                <div class="plan-actions">
+                    <button class="btn btn-primary" onclick="showCustomPlanDetails(${plan.id})">Ver Detalles</button>
+                    <button class="btn btn-outline" onclick="downloadPlan(${plan.id}, 'custom')">Descargar</button>
+                    <button class="btn btn-outline" onclick="applyCustomPlanToWeek(${plan.id})">Aplicar a Semana</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteCustomPlan(${plan.id})">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Aplicar plan personalizado a la semana actual
+function applyCustomPlanToWeek(planId) {
+    const plan = customPlans.find(p => p.id === planId);
+    if (!plan) return;
+    
+    if (confirm(`¿Aplicar el plan "${plan.name}" a tu semana actual?`)) {
+        // Aquí puedes implementar la lógica para aplicar el plan a la semana
+        // Por ejemplo, agregar las comidas al planificador semanal
+        alert(`Plan "${plan.name}" aplicado a tu semana. Esta funcionalidad puede expandirse para integrar automáticamente las comidas en tu planificación semanal.`);
+        
+        // Opcional: Cambiar a la sección de home para ver el plan aplicado
+        switchSection('home');
+    }
+}
+
+// Actualizar la función renderMyPlans para incluir planes personalizados
+function renderMyPlans() {
+    // Ocultar/mostrar estado vacío general
+    const hasPlans = userPlans.daily.length > 0 || userPlans.weekly.length > 0 || 
+                     userPlans.favorites.length > 0 || customPlans.length > 0;
+    emptyPlansState.style.display = hasPlans ? 'none' : 'block';
+    
+    // Renderizar todas las secciones
+    renderDailyPlans();
+    renderWeeklyPlans();
+    renderMyCustomPlans(); // <- NUEVA FUNCIÓN
+    renderFavorites();
+    
+    // Actualizar contador en la pestaña de planes personalizados
+    updateCustomPlansCounter();
+}
+
+// Actualizar contador de planes personalizados
+function updateCustomPlansCounter() {
+    const counterElement = document.querySelector('[data-tab="custom-plans"]');
+    if (counterElement) {
+        const baseText = 'Mis Planes Personalizados';
+        counterElement.textContent = customPlans.length > 0 ? 
+            `${baseText} (${customPlans.length})` : baseText;
+    }
+}
+
+// [ACTUALIZAR EL EVENT LISTENER DEL DOMCONTENTLOADED]
+document.addEventListener('DOMContentLoaded', () => {
+    // ... código existente ...
+    
+    // Botones para crear plan personalizado desde "Mis Planes"
+    document.getElementById('create-custom-plan-from-my-plans')?.addEventListener('click', () => {
+        document.getElementById('create-custom-plan-modal').style.display = 'flex';
+    });
+    
+    document.getElementById('create-first-plan-from-my-plans')?.addEventListener('click', () => {
+        document.getElementById('create-custom-plan-modal').style.display = 'flex';
+    });
+    
+    // Botón de descarga en "Mis Planes"
+    document.getElementById('download-my-plans')?.addEventListener('click', () => {
+        // Mostrar modal de selección para descargar múltiples planes
+        showMyPlansDownloadModal();
+    });
+    
+    // Actualizar renderMyPlans para incluir planes personalizados
+    // (esto reemplaza la función original)
+});
+
+// Modal de descarga para "Mis Planes"
+function showMyPlansDownloadModal() {
+    const hasCustomPlans = customPlans.length > 0;
+    const hasPredefinedPlans = nutritionPlans.length > 0;
+    
+    if (!hasCustomPlans && !hasPredefinedPlans) {
+        alert('No hay planes disponibles para descargar.');
+        return;
+    }
+    
+    const modalContent = `
+        <h3>Descargar Mis Planes</h3>
+        <p>Selecciona qué tipo de planes deseas descargar:</p>
+        
+        ${hasCustomPlans ? `
+        <div style="margin: 1rem 0;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <input type="checkbox" id="include-custom-plans" checked>
+                <strong>Mis Planes Personalizados (${customPlans.length})</strong>
+            </label>
+        </div>
+        ` : ''}
+        
+        ${hasPredefinedPlans ? `
+        <div style="margin: 1rem 0;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <input type="checkbox" id="include-predefined-plans">
+                <strong>Planes Predefinidos (${nutritionPlans.length})</strong>
+            </label>
+        </div>
+        ` : ''}
+        
+        <div class="form-actions">
+            <button type="button" class="btn btn-outline" onclick="closeModal('my-plans-download-modal')">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="processMyPlansDownload()">Descargar Seleccionados</button>
+        </div>
+    `;
+    
+    // Crear o actualizar modal
+    let modal = document.getElementById('my-plans-download-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'my-plans-download-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">Descargar Mis Planes</h3>
+                    <button class="modal-close" onclick="closeModal('my-plans-download-modal')">&times;</button>
+                </div>
+                <div class="modal-body" id="my-plans-download-content">
+                    ${modalContent}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    } else {
+        document.getElementById('my-plans-download-content').innerHTML = modalContent;
+    }
+    
+    modal.style.display = 'flex';
+}
+
+// Procesar descarga desde "Mis Planes"
+function processMyPlansDownload() {
+    const includeCustom = document.getElementById('include-custom-plans')?.checked || false;
+    const includePredefined = document.getElementById('include-predefined-plans')?.checked || false;
+    
+    let plansToDownload = [];
+    
+    if (includeCustom) {
+        plansToDownload.push(...customPlans.map(plan => ({...plan, type: 'custom'})));
+    }
+    
+    if (includePredefined) {
+        plansToDownload.push(...nutritionPlans.map(plan => ({...plan, type: 'predefined'})));
+    }
+    
+    if (plansToDownload.length === 0) {
+        alert('Selecciona al menos un tipo de plan para descargar.');
+        return;
+    }
+    
+    downloadMyPlansCombined(plansToDownload);
+    closeModal('my-plans-download-modal');
+}
+
+// Descargar planes combinados de "Mis Planes"
+function downloadMyPlansCombined(plans) {
+    const combinedContent = generateMyPlansCombinedContent(plans);
+    
+    const element = document.createElement('a');
+    const file = new Blob([combinedContent], { type: 'text/html' });
+    element.href = URL.createObjectURL(file);
+    element.download = `Mis_Planes_NutriGuard_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+// Generar contenido combinado para "Mis Planes"
+function generateMyPlansCombinedContent(plans) {
+    const currentDate = new Date().toLocaleDateString('es-ES');
+    
+    let plansHTML = '';
+    plans.forEach((plan, index) => {
+        const planType = plan.type === 'custom' ? 'Personalizado' : 'Predefinido';
+        
+        plansHTML += `
+        <div style="page-break-after: always; margin-bottom: 40px;">
+            <div class="header">
+                <h1 class="plan-title">${plan.name}</h1>
+                <div class="plan-meta">
+                    <div class="meta-item"><strong>${plan.calories} kcal/día</strong></div>
+                    <div class="meta-item"><strong>${planType}</strong></div>
+                    <div class="meta-item"><strong>Plan ${index + 1} de ${plans.length}</strong></div>
+                </div>
+                <p>${plan.description || 'Plan nutricional personalizado.'}</p>
+                <div class="preferences">
+                    ${plan.preferences && plan.preferences.length > 0 ? 
+                      plan.preferences.map(pref => `<span class="preference-tag">${pref}</span>`).join('') : 
+                      '<span class="preference-tag">Personalizado</span>'}
+                </div>
+            </div>
+            
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">☀️</span>
+                    Desayuno
+                </h2>
+                <p>${plan.details?.breakfast || plan.meals?.breakfast}</p>
+            </div>
+            
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">🍽️</span>
+                    Almuerzo
+                </h2>
+                <p>${plan.details?.lunch || plan.meals?.lunch}</p>
+            </div>
+            
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">🌙</span>
+                    Cena
+                </h2>
+                <p>${plan.details?.dinner || plan.meals?.dinner}</p>
+            </div>
+            
+            ${(plan.details?.snacks || plan.meals?.snacks) ? `
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">🥨</span>
+                    Snacks
+                </h2>
+                <p>${plan.details?.snacks || plan.meals?.snacks}</p>
+            </div>
+            ` : ''}
+        </div>`;
+    });
+    
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Planes NutriGuard - ${currentDate}</title>
+    <style>
+        /* [Mismo CSS que en generateCombinedPlansContent] */
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; border-bottom: 3px solid #3182ce; padding-bottom: 20px; margin-bottom: 30px; }
+        .plan-title { color: #2d3748; margin-bottom: 10px; }
+        .plan-meta { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .meta-item { background: #f7fafc; padding: 8px 16px; border-radius: 20px; border: 1px solid #e2e8f0; }
+        .preferences { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; justify-content: center; }
+        .preference-tag { background: #3182ce; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+        .meal-section { margin: 25px 0; padding: 20px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3182ce; }
+        .meal-title { color: #2d3748; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .meal-icon { font-size: 1.2em; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 0.9em; }
+        @media print { body { max-width: none; padding: 0; } .meal-section { break-inside: avoid; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mis Planes Nutricionales - NutriGuard</h1>
+        <div class="plan-meta">
+            <div class="meta-item"><strong>${plans.length} planes</strong></div>
+            <div class="meta-item"><strong>Generado: ${currentDate}</strong></div>
+            <div class="meta-item"><strong>Usuario Personal</strong></div>
+        </div>
+    </div>
+    
+    ${plansHTML}
+    
+    <div class="footer">
+        <p>Planes personales generados por NutriGuard - Planes Nutricionales para Personal Policial</p>
+        <p>© ${new Date().getFullYear()} NutriGuard. Todos los derechos reservados.</p>
+    </div>
+</body>
+</html>`;
 }

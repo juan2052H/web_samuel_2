@@ -26,6 +26,16 @@
         </div>
     </header>
 
+    <!-- En la sección de planes, agrega este botón -->
+    <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+        <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('predefined')">
+            📥 Descargar Múltiples
+        </button>
+        <span style="font-size: 0.9rem; color: var(--text-secondary);">
+            ${nutritionPlans.length} planes disponibles
+        </span>
+    </div>
+
     <nav>
         <div class="container">
             <div class="nav-container">
@@ -141,17 +151,69 @@
                 <!-- Los planes se cargarán aquí dinámicamente -->
             </div>
         </section>
+        
 
-        <!-- Sección Recetas -->
-        <section id="recipes-section" class="section">
-            <h2 class="section-title">Recetas y Preparaciones</h2>
-            <div class="recipes-container">
-                <div class="card">
-                    <h3>Recetas por Categoría</h3>
-                    <p>Esta sección estará disponible próximamente con recetas detalladas paso a paso.</p>
+          <!-- Sección Planes Nutricionales -->
+        <section id="plans-section" class="section">
+            <div class="my-plans-header">
+                <h2 class="section-title">Planes Nutricionales</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-outline" id="download-predefined-plans">
+                        📥 Descargar Planes
+                    </button>
+                    <button class="btn btn-primary" id="create-custom-plan">Crear Plan Personalizado</button>
+                </div>
+            </div>
+            
+            <div class="plans-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="predefined-plans">Planes Predefinidos</button>
+                    <button class="tab-btn" data-tab="my-custom-plans">Mis Planes Personalizados</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div id="predefined-plans" class="tab-pane active">
+                        <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                            <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('predefined')">
+                                📥 Descargar Múltiples
+                            </button>
+                            <span style="font-size: 0.9rem; color: var(--text-secondary);">
+                                ${nutritionPlans.length} planes disponibles
+                            </span>
+                        </div>
+                        <div class="plans-container" id="plans-container">
+                            <!-- Los planes predefinidos se cargarán aquí dinámicamente -->
+                        </div>
+                    </div>
+                    
+                    <div id="my-custom-plans" class="tab-pane">
+                        <div class="plans-actions" style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                            <button class="btn btn-outline btn-small" onclick="showMultiDownloadModal('custom')" 
+                                    ${customPlans.length === 0 ? 'disabled' : ''}>
+                                📥 Descargar Múltiples
+                            </button>
+                            <span style="font-size: 0.9rem; color: var(--text-secondary);">
+                                ${customPlans.length} planes personalizados
+                            </span>
+                        </div>
+                        <div class="plans-container" id="custom-plans-container">
+                            <!-- Los planes personalizados se cargarán aquí -->
+                        </div>
+                        <div class="empty-state" id="empty-custom-plans-state" style="display: none;">
+                            <div class="empty-icon">📋</div>
+                            <h3>No tienes planes personalizados</h3>
+                            <p>Crea tu primer plan personalizado para adaptarlo a tus necesidades específicas.</p>
+                            <button class="btn btn-primary" id="create-first-plan">Crear Mi Primer Plan</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
+
+
+        
+
+        
 
         <!-- Sección Calculadora -->
         <section id="calculator-section" class="section">
@@ -337,5 +399,98 @@
 
     <script src="data.js"></script>
     <script src="script.js"></script>
+    <!-- Agregar después de los otros scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- [file name]: index.html -->
+<!-- [AGREGAR ESTE MODAL AL FINAL DEL ARCHIVO, ANTES DEL CIERRE DE BODY] -->
+
+    <!-- Modal para crear plan personalizado -->
+    <div class="modal" id="create-custom-plan-modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Crear Plan Personalizado</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="custom-plan-form">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="custom-plan-name">Nombre del Plan *</label>
+                            <input type="text" id="custom-plan-name" name="plan-name" required placeholder="Ej: Mi Plan de Alto Rendimiento">
+                        </div>
+                        <div class="form-group">
+                            <label for="custom-plan-calories">Calorías Diarias *</label>
+                            <input type="number" id="custom-plan-calories" name="plan-calories" required placeholder="Ej: 2500">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="custom-plan-description">Descripción</label>
+                        <textarea id="custom-plan-description" name="plan-description" placeholder="Describe los objetivos y características de tu plan..." rows="3"></textarea>
+                    </div>
+                    
+                    <h4 style="margin: 1.5rem 0 1rem 0;">Preferencias Dietéticas</h4>
+                    <div class="preferences-grid">
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Alto en proteína">
+                            <span>Alto en proteína</span>
+                        </label>
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Bajo en grasa">
+                            <span>Bajo en grasa</span>
+                        </label>
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Sin azúcar">
+                            <span>Sin azúcar</span>
+                        </label>
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Sin fritos">
+                            <span>Sin fritos</span>
+                        </label>
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Vegetariano">
+                            <span>Vegetariano</span>
+                        </label>
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Ligero">
+                            <span>Ligero</span>
+                        </label>
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Fácil digestión">
+                            <span>Fácil digestión</span>
+                        </label>
+                        <label class="preference-option">
+                            <input type="checkbox" class="preference-checkbox" value="Alta energía">
+                            <span>Alta energía</span>
+                        </label>
+                    </div>
+                    
+                    <h4 style="margin: 1.5rem 0 1rem 0;">Comidas Diarias</h4>
+                    <div class="form-group">
+                        <label for="custom-plan-breakfast">Desayuno *</label>
+                        <textarea id="custom-plan-breakfast" name="plan-breakfast" required placeholder="Describe el desayuno ideal para este plan..." rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-plan-lunch">Almuerzo *</label>
+                        <textarea id="custom-plan-lunch" name="plan-lunch" required placeholder="Describe el almuerzo ideal para este plan..." rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-plan-dinner">Cena *</label>
+                        <textarea id="custom-plan-dinner" name="plan-dinner" required placeholder="Describe la cena ideal para este plan..." rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-plan-snacks">Snacks</label>
+                        <textarea id="custom-plan-snacks" name="plan-snacks" placeholder="Describe los snacks recomendados..." rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('create-custom-plan-modal')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="submit-custom-plan">Crear Plan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

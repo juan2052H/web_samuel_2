@@ -1,3 +1,6 @@
+// [file name]: script.js
+// [REEMPLAZAR TODO EL CONTENIDO CON ESTE CÓDIGO ACTUALIZADO]
+
 // Elementos DOM
 const mealsContainer = document.getElementById('meals-container');
 const shiftSelect = document.getElementById('shift-select');
@@ -29,6 +32,7 @@ const weeklyPlansContainer = document.getElementById('weekly-plans-container');
 const favoritesContainer = document.getElementById('favorites-container');
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = document.querySelector('.theme-icon');
+const globalSearch = document.getElementById('global-search');
 
 // Estado de la aplicación
 let currentWeek = 0; // 0 = semana actual
@@ -102,34 +106,92 @@ function switchSection(sectionId) {
         renderNutritionPlans();
     } else if (sectionId === 'my-plans') {
         renderMyPlans();
+    } else if (sectionId === 'home') {
+        renderMeals(shiftSelect.value);
     }
 }
 
-// Función para renderizar comidas
-function renderMeals(shift) {
+// Función para buscar en todas las comidas (búsqueda global)
+function searchAllMeals(searchTerm) {
+    const allMeals = [];
+    
+    // Recopilar todas las comidas de todos los turnos
+    for (const shift in mealsDB) {
+        allMeals.push(...mealsDB[shift]);
+    }
+    
+    const filteredMeals = allMeals.filter(meal => {
+        const matchesName = meal.name.toLowerCase().includes(searchTerm);
+        const matchesDescription = meal.description.toLowerCase().includes(searchTerm);
+        const matchesIngredients = meal.ingredients.some(ingredient => 
+            ingredient.toLowerCase().includes(searchTerm)
+        );
+        
+        return matchesName || matchesDescription || matchesIngredients;
+    });
+    
+    return filteredMeals;
+}
+
+// Función para renderizar comidas con filtros mejorados
+function renderMeals(shift = null) {
     mealsContainer.innerHTML = '';
     
-    const meals = mealsDB[shift] || [];
-    const maxCalories = parseInt(caloriesFilter.value) || Infinity;
-    const searchTerm = searchInput.value.toLowerCase();
+    let meals = [];
     
+    // Determinar qué comidas mostrar
+    if (shift && mealsDB[shift]) {
+        // Mostrar comidas del turno seleccionado
+        meals = mealsDB[shift];
+    } else {
+        // Mostrar todas las comidas (para búsqueda global)
+        for (const shiftKey in mealsDB) {
+            meals.push(...mealsDB[shiftKey]);
+        }
+    }
+    
+    const maxCalories = parseInt(caloriesFilter.value) || Infinity;
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    // Aplicar filtros
     const filteredMeals = meals.filter(meal => {
+        // Filtro por calorías
         const matchesCalories = meal.calories <= maxCalories;
-        const matchesSearch = meal.name.toLowerCase().includes(searchTerm) || 
-                             meal.description.toLowerCase().includes(searchTerm);
+        
+        // Filtro por búsqueda
+        let matchesSearch = true;
+        if (searchTerm) {
+            matchesSearch = meal.name.toLowerCase().includes(searchTerm) || 
+                           meal.description.toLowerCase().includes(searchTerm) ||
+                           meal.ingredients.some(ingredient => 
+                               ingredient.toLowerCase().includes(searchTerm)
+                           );
+        }
+        
         return matchesCalories && matchesSearch;
     });
     
+    // Mostrar resultados
     if (filteredMeals.length === 0) {
-        mealsContainer.innerHTML = '<p>No se encontraron comidas con los filtros aplicados.</p>';
+        mealsContainer.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-icon">🔍</div>
+                <h3>No se encontraron comidas</h3>
+                <p>Intenta ajustar los filtros o usar términos de búsqueda diferentes.</p>
+                <button class="btn btn-primary" onclick="clearFilters()">Limpiar filtros</button>
+            </div>
+        `;
         return;
     }
     
+    // Renderizar tarjetas de comidas
     filteredMeals.forEach(meal => {
         const mealCard = document.createElement('div');
         mealCard.className = 'meal-card';
         mealCard.innerHTML = `
-            <div class="meal-image" style="background-color: #e2e8f0;"></div>
+            <div class="meal-image" style="background-color: #e2e8f0;">
+                <div class="meal-shift-badge">${getShiftName(meal)}</div>
+            </div>
             <div class="meal-content">
                 <div class="meal-header">
                     <h3 class="meal-title">${meal.name}</h3>
@@ -164,6 +226,57 @@ function renderMeals(shift) {
         `;
         mealsContainer.appendChild(mealCard);
     });
+}
+
+// Función auxiliar para obtener el nombre del turno de una comida
+function getShiftName(meal) {
+    for (const shift in mealsDB) {
+        if (mealsDB[shift].find(m => m.id === meal.id)) {
+            switch(shift) {
+                case 'morning': return 'Mañana';
+                case 'afternoon': return 'Tarde';
+                case 'night': return 'Noche';
+                default: return shift;
+            }
+        }
+    }
+    return '';
+}
+
+// Función para limpiar filtros
+function clearFilters() {
+    caloriesFilter.value = '';
+    searchInput.value = '';
+    shiftSelect.value = 'morning';
+    renderMeals('morning');
+}
+
+// Función para aplicar búsqueda global
+function applyGlobalSearch() {
+    const searchTerm = globalSearch.value.toLowerCase().trim();
+    
+    if (!searchTerm) {
+        return; // No hacer nada si la búsqueda está vacía
+    }
+    
+    // Cambiar a la sección de inicio si no está allí
+    if (!document.getElementById('home-section').classList.contains('active')) {
+        switchSection('home');
+    }
+    
+    // Limpiar otros filtros y aplicar búsqueda
+    searchInput.value = searchTerm;
+    shiftSelect.value = ''; // Mostrar todos los turnos
+    caloriesFilter.value = ''; // Sin filtro de calorías
+    
+    // Renderizar resultados de búsqueda global
+    renderMeals();
+    
+    // Mostrar mensaje de búsqueda
+    const sectionTitle = document.querySelector('#home-section .section-title');
+    if (sectionTitle) {
+        sectionTitle.textContent = `Resultados de búsqueda: "${searchTerm}"`;
+    }
 }
 
 // Función para agregar a favoritos
@@ -244,7 +357,7 @@ function showMealDetails(mealId) {
     
     mealModalBody.innerHTML = `
         <h3>${meal.name}</h3>
-        <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+        <div style="display: flex; gap: 1rem; margin: 1rem 0; flex-wrap: wrap;">
             <div style="background-color: var(--bg-primary); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
                 <strong>${meal.calories}</strong> kcal
             </div>
@@ -253,6 +366,9 @@ function showMealDetails(mealId) {
             </div>
             <div style="background-color: var(--bg-primary); padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
                 <strong>${meal.difficulty}</strong>
+            </div>
+            <div style="background-color: var(--accent); color: white; padding: 0.5rem 1rem; border-radius: 4px;">
+                <strong>${getShiftName(meal)}</strong>
             </div>
         </div>
         <p>${meal.description}</p>
@@ -283,7 +399,7 @@ function showMealDetails(mealId) {
             ${meal.instructions.map(step => `<li>${step}</li>`).join('')}
         </ol>
         
-        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
             <button class="btn btn-primary" onclick="addToPlan(${meal.id}); closeModal('meal-modal')">Agregar a mi plan</button>
             <button class="btn btn-outline" onclick="addToFavorites(${meal.id}); closeModal('meal-modal')">Guardar como favorito</button>
         </div>
@@ -651,6 +767,22 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMeals(shiftSelect.value);
     });
     
+    // Búsqueda en tiempo real
+    searchInput.addEventListener('input', () => {
+        renderMeals(shiftSelect.value);
+    });
+    
+    caloriesFilter.addEventListener('input', () => {
+        renderMeals(shiftSelect.value);
+    });
+    
+    // Búsqueda global
+    globalSearch.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            applyGlobalSearch();
+        }
+    });
+    
     // Planificador semanal
     prevWeekBtn.addEventListener('click', () => {
         currentWeek--;
@@ -744,3 +876,474 @@ document.addEventListener('DOMContentLoaded', () => {
         switchSection('plans');
     });
 });
+// Botón de descarga para planes predefinidos
+document.getElementById('download-predefined-plans')?.addEventListener('click', () => {
+    showMultiDownloadModal('predefined');
+});
+// [file name]: script.js
+// [AGREGAR ESTAS NUEVAS FUNCIONES]
+
+// Función para descargar plan en formato PDF
+function downloadPlan(planId, planType = 'predefined') {
+    let plan;
+    
+    if (planType === 'predefined') {
+        plan = nutritionPlans.find(p => p.id === planId);
+    } else {
+        plan = customPlans.find(p => p.id === planId);
+    }
+    
+    if (!plan) return;
+    
+    // Crear contenido del PDF
+    const pdfContent = generatePlanPDFContent(plan);
+    
+    // Crear y descargar el PDF
+    const element = document.createElement('a');
+    const file = new Blob([pdfContent], { type: 'text/html' });
+    element.href = URL.createObjectURL(file);
+    element.download = `Plan_${plan.name.replace(/\s+/g, '_')}.html`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    // También ofrecer opción de impresión
+    setTimeout(() => {
+        if (confirm('¿Te gustaría imprimir el plan ahora?')) {
+            printPlan(plan);
+        }
+    }, 500);
+}
+
+// Función para generar contenido HTML del plan
+function generatePlanPDFContent(plan) {
+    const currentDate = new Date().toLocaleDateString('es-ES');
+    
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${plan.name} - NutriGuard</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            text-align: center; 
+            border-bottom: 3px solid #3182ce; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+        }
+        .plan-title { 
+            color: #2d3748; 
+            margin-bottom: 10px; 
+        }
+        .plan-meta { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+        }
+        .meta-item { 
+            background: #f7fafc; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            border: 1px solid #e2e8f0; 
+        }
+        .preferences { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            margin: 15px 0; 
+            justify-content: center; 
+        }
+        .preference-tag { 
+            background: #3182ce; 
+            color: white; 
+            padding: 4px 12px; 
+            border-radius: 12px; 
+            font-size: 0.85em; 
+        }
+        .meal-section { 
+            margin: 25px 0; 
+            padding: 20px; 
+            background: #f8fafc; 
+            border-radius: 8px; 
+            border-left: 4px solid #3182ce; 
+        }
+        .meal-title { 
+            color: #2d3748; 
+            margin-bottom: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .meal-icon { 
+            font-size: 1.2em; 
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 1px solid #e2e8f0; 
+            color: #718096; 
+            font-size: 0.9em; 
+        }
+        @media print {
+            body { 
+                max-width: none; 
+                padding: 0; 
+            }
+            .meal-section { 
+                break-inside: avoid; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="plan-title">${plan.name}</h1>
+        <div class="plan-meta">
+            <div class="meta-item"><strong>${plan.calories} kcal/día</strong></div>
+            <div class="meta-item"><strong>Generado: ${currentDate}</strong></div>
+        </div>
+        <p>${plan.description}</p>
+        <div class="preferences">
+            ${plan.preferences.map(pref => `<span class="preference-tag">${pref}</span>`).join('')}
+        </div>
+    </div>
+    
+    <div class="meal-section">
+        <h2 class="meal-title">
+            <span class="meal-icon">☀️</span>
+            Desayuno
+        </h2>
+        <p>${plan.details.breakfast}</p>
+    </div>
+    
+    <div class="meal-section">
+        <h2 class="meal-title">
+            <span class="meal-icon">🍽️</span>
+            Almuerzo
+        </h2>
+        <p>${plan.details.lunch}</p>
+    </div>
+    
+    <div class="meal-section">
+        <h2 class="meal-title">
+            <span class="meal-icon">🌙</span>
+            Cena
+        </h2>
+        <p>${plan.details.dinner}</p>
+    </div>
+    
+    <div class="meal-section">
+        <h2 class="meal-title">
+            <span class="meal-icon">🥨</span>
+            Snacks
+        </h2>
+        <p>${plan.details.snacks}</p>
+    </div>
+    
+    <div class="footer">
+        <p>Plan generado por NutriGuard - Planes Nutricionales para Personal Policial</p>
+        <p>© ${new Date().getFullYear()} NutriGuard. Todos los derechos reservados.</p>
+    </div>
+</body>
+</html>`;
+}
+
+// Función para imprimir plan
+function printPlan(plan) {
+    const printWindow = window.open('', '_blank');
+    const printContent = generatePlanPDFContent(plan);
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+        printWindow.print();
+        // printWindow.close(); // Opcional: cerrar después de imprimir
+    }, 500);
+}
+
+// Función para descargar múltiples planes
+function downloadMultiplePlans(planIds, planType = 'predefined') {
+    if (!planIds || planIds.length === 0) {
+        alert('Selecciona al menos un plan para descargar.');
+        return;
+    }
+    
+    const plans = planType === 'predefined' ? nutritionPlans : customPlans;
+    const selectedPlans = plans.filter(plan => planIds.includes(plan.id));
+    
+    if (selectedPlans.length === 0) {
+        alert('No se encontraron los planes seleccionados.');
+        return;
+    }
+    
+    // Crear archivo ZIP con múltiples planes
+    if (selectedPlans.length === 1) {
+        // Si es solo uno, descargar directamente
+        downloadPlan(selectedPlans[0].id, planType);
+    } else {
+        // Para múltiples planes, crear un archivo combinado
+        downloadPlansCombined(selectedPlans);
+    }
+}
+
+// Función para descargar planes combinados en un solo archivo
+function downloadPlansCombined(plans) {
+    const combinedContent = generateCombinedPlansContent(plans);
+    
+    const element = document.createElement('a');
+    const file = new Blob([combinedContent], { type: 'text/html' });
+    element.href = URL.createObjectURL(file);
+    element.download = `Planes_NutriGuard_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+// Función para generar contenido combinado de múltiples planes
+function generateCombinedPlansContent(plans) {
+    const currentDate = new Date().toLocaleDateString('es-ES');
+    
+    let plansHTML = '';
+    plans.forEach((plan, index) => {
+        plansHTML += `
+        <div style="page-break-after: always; margin-bottom: 40px;">
+            <div class="header">
+                <h1 class="plan-title">${plan.name}</h1>
+                <div class="plan-meta">
+                    <div class="meta-item"><strong>${plan.calories} kcal/día</strong></div>
+                    <div class="meta-item"><strong>Plan ${index + 1} de ${plans.length}</strong></div>
+                </div>
+                <p>${plan.description}</p>
+                <div class="preferences">
+                    ${plan.preferences.map(pref => `<span class="preference-tag">${pref}</span>`).join('')}
+                </div>
+            </div>
+            
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">☀️</span>
+                    Desayuno
+                </h2>
+                <p>${plan.details.breakfast}</p>
+            </div>
+            
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">🍽️</span>
+                    Almuerzo
+                </h2>
+                <p>${plan.details.lunch}</p>
+            </div>
+            
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">🌙</span>
+                    Cena
+                </h2>
+                <p>${plan.details.dinner}</p>
+            </div>
+            
+            <div class="meal-section">
+                <h2 class="meal-title">
+                    <span class="meal-icon">🥨</span>
+                    Snacks
+                </h2>
+                <p>${plan.details.snacks}</p>
+            </div>
+        </div>`;
+    });
+    
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes NutriGuard - ${currentDate}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            text-align: center; 
+            border-bottom: 3px solid #3182ce; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+        }
+        .plan-title { 
+            color: #2d3748; 
+            margin-bottom: 10px; 
+        }
+        .plan-meta { 
+            display: flex; 
+            justify-content: center; 
+            gap: 20px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+        }
+        .meta-item { 
+            background: #f7fafc; 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            border: 1px solid #e2e8f0; 
+        }
+        .preferences { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            margin: 15px 0; 
+            justify-content: center; 
+        }
+        .preference-tag { 
+            background: #3182ce; 
+            color: white; 
+            padding: 4px 12px; 
+            border-radius: 12px; 
+            font-size: 0.85em; 
+        }
+        .meal-section { 
+            margin: 25px 0; 
+            padding: 20px; 
+            background: #f8fafc; 
+            border-radius: 8px; 
+            border-left: 4px solid #3182ce; 
+        }
+        .meal-title { 
+            color: #2d3748; 
+            margin-bottom: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .meal-icon { 
+            font-size: 1.2em; 
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 1px solid #e2e8f0; 
+            color: #718096; 
+            font-size: 0.9em; 
+        }
+        @media print {
+            body { 
+                max-width: none; 
+                padding: 0; 
+            }
+            .meal-section { 
+                break-inside: avoid; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Planes Nutricionales NutriGuard</h1>
+        <div class="plan-meta">
+            <div class="meta-item"><strong>${plans.length} planes</strong></div>
+            <div class="meta-item"><strong>Generado: ${currentDate}</strong></div>
+        </div>
+    </div>
+    
+    ${plansHTML}
+    
+    <div class="footer">
+        <p>Planes generados por NutriGuard - Planes Nutricionales para Personal Policial</p>
+        <p>© ${new Date().getFullYear()} NutriGuard. Todos los derechos reservados.</p>
+    </div>
+</body>
+</html>`;
+}
+
+// Función para mostrar modal de selección múltiple
+function showMultiDownloadModal(planType = 'predefined') {
+    const plans = planType === 'predefined' ? nutritionPlans : customPlans;
+    
+    if (plans.length === 0) {
+        alert(`No hay planes ${planType === 'predefined' ? 'predefinidos' : 'personalizados'} disponibles.`);
+        return;
+    }
+    
+    const modalContent = `
+        <h3>Descargar Múltiples Planes</h3>
+        <p>Selecciona los planes que deseas descargar:</p>
+        <div class="download-selection" style="max-height: 300px; overflow-y: auto; margin: 1rem 0;">
+            ${plans.map(plan => `
+                <label class="download-option" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                    <input type="checkbox" value="${plan.id}" class="plan-checkbox">
+                    <div>
+                        <strong>${plan.name}</strong>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${plan.calories} kcal • ${plan.preferences.join(', ')}</div>
+                    </div>
+                </label>
+            `).join('')}
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn btn-outline" onclick="closeModal('multi-download-modal')">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="processMultiDownload('${planType}')">Descargar Seleccionados</button>
+            <button type="button" class="btn btn-outline" onclick="selectAllPlans()">Seleccionar Todos</button>
+        </div>
+    `;
+    
+    // Crear o actualizar modal
+    let modal = document.getElementById('multi-download-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'multi-download-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">Descargar Planes</h3>
+                    <button class="modal-close" onclick="closeModal('multi-download-modal')">&times;</button>
+                </div>
+                <div class="modal-body" id="multi-download-content">
+                    ${modalContent}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    } else {
+        document.getElementById('multi-download-content').innerHTML = modalContent;
+    }
+    
+    modal.style.display = 'flex';
+}
+
+// Función para seleccionar todos los planes
+function selectAllPlans() {
+    const checkboxes = document.querySelectorAll('.plan-checkbox');
+    const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !allChecked;
+    });
+}
+
+// Función para procesar descarga múltiple
+function processMultiDownload(planType) {
+    const checkboxes = document.querySelectorAll('.plan-checkbox:checked');
+    const selectedPlanIds = Array.from(checkboxes).map(checkbox => parseInt(checkbox.value));
+    
+    downloadMultiplePlans(selectedPlanIds, planType);
+    closeModal('multi-download-modal');
+}
